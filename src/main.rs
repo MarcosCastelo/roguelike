@@ -10,6 +10,7 @@ const LIMIT_FPS: i32 = 30;
 
 struct Tcod {
     root: Root,
+    con: Offscreen
 }
 
 fn main() {
@@ -22,15 +23,26 @@ fn main() {
         .title("Rust/libtcod test")
         .init();
 
-    let mut tcod = Tcod { root };
+    let con = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    let mut tcod = Tcod { root, con };
 
     let mut player_x = SCREEN_WIDTH / 2;
     let mut player_y = SCREEN_HEIGHT / 2;
 
     while !tcod.root.window_closed() {
-        tcod.root.set_default_foreground(WHITE);
-        tcod.root.clear();
-        tcod.root.put_char(player_x, player_y, '@', BackgroundFlag::None);
+        tcod.con.set_default_foreground(WHITE);
+        tcod.con.clear();
+        tcod.con.put_char(player_x, player_y, '@', BackgroundFlag::None);
+        blit( 
+            &tcod.con, 
+            (0, 0),
+            (SCREEN_WIDTH ,SCREEN_HEIGHT), 
+            &mut tcod.root,
+            (0, 0),
+            1.0,
+            1.0,
+        );
         tcod.root.flush();
         tcod.root.wait_for_keypress(true);
         let exit = handle_keys(&mut tcod, &mut player_x, &mut player_y);
