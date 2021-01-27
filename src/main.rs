@@ -49,7 +49,7 @@ fn handle_keys(tcod: &mut Tcod, player_x: &mut i32, player_y: &mut i32) -> bool 
             let fullscreen = tcod.root.is_fullscreen();
             tcod.root.set_fullscreen(!fullscreen);
         },
-        Key { code: Escape, .. } => return true
+        Key { code: Escape, .. } => return true,
 
         _ => {}
     }
