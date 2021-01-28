@@ -14,9 +14,37 @@ const MAP_HEIGHT: i32 = 45;
 const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
 const COLOR_DARK_GROUND: Color = Color { r: 50, g: 50, b: 150, };
 
+#[derive(Clone, Copy, Debug)]
+struct Tile {
+    blocked: bool,
+    block_sight: bool
+}
+
+impl Tile {
+    pub fn empty() -> Self {
+        Tile {
+            blocked: false,
+            block_sight: false
+        }
+    }
+
+    pub fn wall() -> Self {
+        Tile {
+            blocked: true,
+            block_sight: true
+        }
+    }
+}
+
 struct Tcod {
     root: Root,
     con: Offscreen
+}
+
+type Map = Vec<Vec<Tile>>;
+
+struct Game {
+    map: Map
 }
 
 struct Object {
