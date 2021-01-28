@@ -132,3 +132,7 @@ fn handle_keys(tcod: &mut Tcod, player: &mut Object) -> bool {
     }
     false
 }
+
+fn make_map() -> Map {
+    let mut map = vec![vec![Tile::empty(); MAP_HEIGHT as usize]; MAP_WIDTH as usize]
+}
