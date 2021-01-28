@@ -134,5 +134,13 @@ fn handle_keys(tcod: &mut Tcod, player: &mut Object) -> bool {
 }
 
 fn make_map() -> Map {
-    let mut map = vec![vec![Tile::empty(); MAP_HEIGHT as usize]; MAP_WIDTH as usize]
+    let mut map = vec![vec![Tile::empty(); MAP_HEIGHT as usize]; MAP_WIDTH as usize];
+
+    map
+}
+
+fn render_all(tcod: &mut Tcod, game: &Game, objects: &[Object]){
+    for object in objects {
+        object.draw(&mut tcod.con); 
+    }
 }
