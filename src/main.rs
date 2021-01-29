@@ -77,6 +77,17 @@ struct Rect {
     y2: i32
 }
 
+impl Rect {
+    pub fn new (x: i32, y: i32, w: i32, h: i32) -> Self {
+        Rect {
+            x1: x,
+            y1: y,
+            x2: x + w,
+            y2: y + h,
+        }
+    }
+}
+
 fn main() {
     tcod::system::set_fps(LIMIT_FPS);
 
