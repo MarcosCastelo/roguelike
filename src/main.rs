@@ -89,22 +89,14 @@ fn main() {
 
     let mut objects = [player, npc];
 
+    let game = Game {
+        map: make_map()
+    };
+
     while !tcod.root.window_closed() {
         tcod.con.clear();
 
-        for object in &objects {
-            object.draw(&mut tcod.con);
-        }
-
-        blit(
-            &tcod.con,
-            (0, 0),
-            (SCREEN_WIDTH, SCREEN_HEIGHT),
-            &mut tcod.root,
-            (0, 0),
-            1.0,
-            1.0,
-        );
+        render_all(&mut tcod, &game, &objects);
 
         tcod.root.flush();
 
