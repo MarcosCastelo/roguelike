@@ -180,3 +180,11 @@ fn render_all(tcod: &mut Tcod, game: &Game, objects: &[Object]){
         1.0
     );
 }
+
+fn create_room(room: Rect, map: &mut Map) {
+    for x in (room.x1 + 1)..room.x2 {
+        for y in (room.y1 + 1)..room.y2 {
+            map[x as usize][y as usize] = Tile::empty();
+        }
+    }
+}
