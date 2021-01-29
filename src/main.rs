@@ -159,4 +159,14 @@ fn render_all(tcod: &mut Tcod, game: &Game, objects: &[Object]){
     for object in objects {
         object.draw(&mut tcod.con); 
     }
+
+    blit(
+        &tcod.con,
+        (0, 0),
+        (MAP_WIDTH, MAP_HEIGHT),
+        &mut tcod.root,
+        (0, 0),
+        1.0,
+        1.0
+    );
 }
