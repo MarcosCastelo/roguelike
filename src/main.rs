@@ -143,6 +143,19 @@ fn make_map() -> Map {
 }
 
 fn render_all(tcod: &mut Tcod, game: &Game, objects: &[Object]){
+    for y in 0..MAP_HEIGHT {
+        for x in 0..MAP_WIDTH {
+            let wall = game.map[x as usize][y as usize].block_sight;
+            if wall {
+                tcod.con
+                    .set_char_background(x, y, COLOR_DARK_WALL, BackgroundFlag::Set);
+            } else {
+                tcod.con
+                    .set_char_background(x, y, COLOR_DARK_GROUND, BackgroundFlag::Set);
+            }
+        }
+    }
+
     for object in objects {
         object.draw(&mut tcod.con); 
     }
