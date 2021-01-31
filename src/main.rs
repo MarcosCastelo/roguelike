@@ -64,6 +64,7 @@ struct Game {
     map: Map
 }
 
+#[derive(Clone, Copy, Debug)]
 struct Object {
     x: i32,
     y: i32,
@@ -155,14 +156,18 @@ fn main() {
         }
     }
 
+    let mut previous_player_position = (player.x, player.y);
+
     while !tcod.root.window_closed() {
         tcod.con.clear();
 
-        render_all(&mut tcod, &game, &objects);
+        let fov_recompute = previous_player_position != (objects[0].x, objects[0].y);
+        render_all(&mut tcod, &game, &objects, fov_recompute);
 
         tcod.root.flush();
 
         let player = &mut objects[0];
+        previous_player_position = (player.x, player.y);
         let exit = handle_keys(&mut tcod, player);
 
         if exit { break; }
@@ -233,22 +238,32 @@ fn make_map(player: &mut Object) -> Map {
     map
 }
 
-fn render_all(tcod: &mut Tcod, game: &Game, objects: &[Object]){
+fn render_all(tcod: &mut Tcod, game: &Game, objects: &[Object], fov_recompute: bool){
+    if fov_recompute {
+        let player = &objects[0];
+        tcod.fov.compute_fov(player.x, player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO);
+    }
     for y in 0..MAP_HEIGHT {
         for x in 0..MAP_WIDTH {
+            let visible = tcod.fov.is_in_fov(x, y);
             let wall = game.map[x as usize][y as usize].block_sight;
-            if wall {
-                tcod.con
-                    .set_char_background(x, y, COLOR_DARK_WALL, BackgroundFlag::Set);
-            } else {
-                tcod.con
-                    .set_char_background(x, y, COLOR_DARK_GROUND, BackgroundFlag::Set);
-            }
+            let color = match(visible, wall) {
+                (false, true) => COLOR_DARK_WALL,
+                (false, false) => COLOR_DARK_GROUND,
+                (true, true) => COLOR_LIGHT_WALL,
+                (true, false) => COLOR_LIGHT_GROUND,
+            };
+            tcod.con
+                .set_char_background(x, y, color, BackgroundFlag::Set);
         }
     }
 
+    
+
     for object in objects {
-        object.draw(&mut tcod.con); 
+        if tcod.fov.is_in_fov(object.x, object.y) {
+            object.draw(&mut tcod.con); 
+        }
     }
 
     blit(
