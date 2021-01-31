@@ -78,6 +78,7 @@ impl Object {
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 struct Rect {
     x1: i32,
     y1: i32,
@@ -101,7 +102,7 @@ impl Rect {
         (center_x, center_y)
     }
 
-    pub fn intersects_with(&self, other: &Rect) -> {
+    pub fn intersects_with(&self, other: &Rect) -> bool {
         //return true if this rectangle intersects with another one
         (self.x1 <= other.x2)
             && (self.x2 >= other.x1)
@@ -124,13 +125,12 @@ fn main() {
 
     let mut tcod = Tcod { root, con };
 
-    let player = Object::new(25, 23, '@', WHITE);
-    let npc = Object::new(SCREEN_WIDTH/2 - 5, SCREEN_HEIGHT/2 - 5, '@', YELLOW);
+    let player = Object::new(0, 0, '@', WHITE);
 
-    let mut objects = [player, npc];
+    let mut objects = [player];
 
     let game = Game {
-        map: make_map()
+        map: make_map(&mut objects[0])
     };
 
     while !tcod.root.window_closed() {
@@ -165,15 +165,38 @@ fn handle_keys(tcod: &mut Tcod, player: &mut Object) -> bool {
     false
 }
 
-fn make_map() -> Map {
+fn make_map(player: &mut Object) -> Map {
     let mut map = vec![vec![Tile::wall(); MAP_HEIGHT as usize]; MAP_WIDTH as usize];
 
-    let room1 = Rect::new(20, 15, 10, 15);
-    let room2 = Rect::new(50, 15, 10, 15);
+    let mut rooms = vec![];
 
-    create_room(room1, &mut map);
-    create_room(room2, &mut map);
-    create_h_tunnel(25,55,23, &mut map);
+    for _ in 0..MAX_ROOMS {
+        //Random size
+        let w = rand::thread_rng().gen_range(ROOM_MIN_SIZE, ROOM_MAX_SIZE + 1);
+        let h = rand::thread_rng().gen_range(ROOM_MIN_SIZE, ROOM_MAX_SIZE + 1);
+
+        //Random position
+        let x = rand::thread_rng().gen_range(0, MAP_WIDTH - w);
+        let y = rand::thread_rng().gen_range(0, MAP_HEIGHT - h);
+
+        let new_room = Rect::new(x, y, w, h);
+        let failed = rooms.iter()
+            .any(|other_room| new_room.intersects_with(other_room));
+
+        if !failed {
+            create_room(new_room, &mut map);
+
+            let (new_x, new_y) = new_room.center();
+
+            if rooms.is_empty() {
+                player.x = new_x;
+                player.y = new_y;
+            } 
+            
+        }
+
+
+    }
 
     map
 }
