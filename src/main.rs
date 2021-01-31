@@ -1,4 +1,5 @@
 use std::cmp;
+use rand::Rng;
 
 use tcod::colors::*;
 use tcod::console::*;
