@@ -191,7 +191,17 @@ fn make_map(player: &mut Object) -> Map {
             if rooms.is_empty() {
                 player.x = new_x;
                 player.y = new_y;
+            } else {
+                let (prev_x, prev_y) = rooms[rooms.len() - 1].center();
+                if rand::random() {
+                    create_h_tunnel(prev_x, new_x, prev_y, &mut map);
+                    create_v_tunnel(prev_y, new_y, new_x, &mut map);
+                } else {                    
+                    create_v_tunnel(prev_y, new_y, prev_x, &mut map);
+                    create_h_tunnel(prev_x, new_x, prev_y, &mut map);
+                }
             } 
+            rooms.push(new_room);
             
         }
 
