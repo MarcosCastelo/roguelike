@@ -7,6 +7,8 @@ use tcod::console::*;
 use tcod::input::Key;
 use tcod::input::KeyCode::*;
 
+use tcod::map::{ FovAlgorithm, Map as FovMap };
+
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
 
@@ -17,10 +19,16 @@ const MAP_HEIGHT: i32 = 45;
 
 const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
 const COLOR_DARK_GROUND: Color = Color { r: 50, g: 50, b: 150, };
+const COLOR_LIGHT_WALL: Color = Color { r: 130, g: 110, b: 50 };
+const COLOR_LIGHT_GROUND: Color = Color { r: 200, g: 180, b: 50 };
 
 const ROOM_MAX_SIZE: i32 = 10;
 const ROOM_MIN_SIZE: i32 = 6;
 const MAX_ROOMS: i32 = 30;
+
+const FOV_ALGO: FovAlgorithm = FovAlgorithm::Basic;
+const FOV_LIGHT_WALLS: bool = true;
+const TORCH_RADIUS: i32 = 10;
 
 #[derive(Clone, Copy, Debug)]
 struct Tile {
@@ -46,7 +54,8 @@ impl Tile {
 
 struct Tcod {
     root: Root,
-    con: Offscreen
+    con: Offscreen,
+    fov: FovMap
 }
 
 type Map = Vec<Vec<Tile>>;
@@ -121,10 +130,12 @@ fn main() {
         .title("Rust/libtcod test")
         .init();
 
-    let con = Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT);
-
-    let mut tcod = Tcod { root, con };
-
+    let mut tcod = Tcod { 
+        root, 
+        con: Offscreen::new(MAP_WIDTH, MAP_HEIGHT),
+        fov: FovMap::new(MAP_WIDTH, MAP_HEIGHT)
+    };
+    
     let player = Object::new(0, 0, '@', WHITE);
 
     let mut objects = [player];
@@ -132,6 +143,17 @@ fn main() {
     let game = Game {
         map: make_map(&mut objects[0])
     };
+
+    for y in 0..MAP_HEIGHT {
+        for x in 0..MAP_WIDTH {
+            tcod.fov.set(
+                x,
+                y,
+                !game.map[x as usize][y as usize].block_sight,
+                !game.map[x as usize][y as usize].blocked,
+            )
+        }
+    }
 
     while !tcod.root.window_closed() {
         tcod.con.clear();
