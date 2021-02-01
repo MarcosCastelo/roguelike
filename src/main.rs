@@ -95,13 +95,6 @@ impl Object {
             }
     } 
 
-    pub fn move_by(id: usize, dx: i32, dy: i32, map: &Map, objects: &mut [Object]) {
-        let (x, y) = objects[id].pos();
-        if !is_blocked(x + dx, y + dy, map, objects) {
-            objects[id].set_pos(x + dx, y + dy);
-        }
-    }
-
     pub fn draw(&self, con: &mut dyn Console) {
         con.set_default_foreground(self.color);
         con.put_char(self.x, self.y, self.char, BackgroundFlag::None);
@@ -362,3 +355,10 @@ fn is_blocked(x: i32, y: i32, map: &Map, objects: &[Object]) -> bool {
         .iter()
         .any(|object| object.blocks && object.pos() == (x, y))
 }
+
+pub fn move_by(id: usize, dx: i32, dy: i32, map: &Map, objects: &mut [Object]) {
+        let (x, y) = objects[id].pos();
+        if !is_blocked(x + dx, y + dy, map, objects) {
+            objects[id].set_pos(x + dx, y + dy);
+        }
+    }
