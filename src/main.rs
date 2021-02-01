@@ -95,9 +95,11 @@ impl Object {
             }
     } 
 
-    pub fn move_by(&mut self, dx: i32, dy: i32) {
-        self.x += dx;
-        self.y += dy;
+    pub fn move_by(id: usize, dx: i32, dy: i32, map: &Map, objects: &mut [Object]) {
+        let (x, y) = objects[id].pos();
+        if !is_blocked(x + dx, y + dy, map, objects) {
+            objects[id].set_pos(x + dx, y + dy);
+        }
     }
 
     pub fn draw(&self, con: &mut dyn Console) {
