@@ -166,7 +166,8 @@ fn main() {
         fov: FovMap::new(MAP_WIDTH, MAP_HEIGHT)
     };
     
-    let player = Object::new(0, 0, '@', WHITE);
+    let mut player = Object::new(0, 0, '@', "player", WHITE, true);
+    player.alive = true;
 
     let mut objects = vec![player];
 
@@ -203,13 +204,13 @@ fn main() {
     }
 }
 
-fn handle_keys(tcod: &mut Tcod, player: &mut Object) -> bool {
+fn handle_keys(tcod: &mut Tcod, game: &Game, objects: &mut Vec<Object>) -> bool {
     let key = tcod.root.wait_for_keypress(true);
     match key {
-        Key { code: Up, .. } => player.move_by(0, -1),
-        Key { code: Down, ..} => player.move_by(0, 1),
-        Key { code: Left, .. } => player.move_by(-1, 0),
-        Key { code: Right, .. } => player.move_by(1, 0),
+        Key { code: Up, .. } => move_by(PLAYER, 0, -1, game, objects),
+        Key { code: Down, ..} => move_by(PLAYER, 0, 1, game, objects),
+        Key { code: Left, .. } => move_by(PLAYER, -1, 0, game, objects),
+        Key { code: Right, .. } => move_by(PLAYER, 1, 0, game, objects),
         Key { code: Enter, alt: true, .. } => {
             let fullscreen = tcod.root.is_fullscreen();
             tcod.root.set_fullscreen(!fullscreen);
@@ -241,7 +242,7 @@ fn make_map(objects: &mut Vec<Object>) -> Map {
 
         if !failed {
             create_room(new_room, &mut map);
-            place_objects(new_room, objects);
+            place_objects(new_room, &map, objects);
 
             let (new_x, new_y) = new_room.center();
 
@@ -339,13 +340,14 @@ fn place_objects(room: Rect, map: &Map, objects: &mut Vec<Object>) {
         let x = rand::thread_rng().gen_range(room.x1 + 1, room.x2);
         let y = rand::thread_rng().gen_range(room.y1 + 1, room.y2);
         
-        if !is_blocked(x, y, map, Objects) {
+        if !is_blocked(x, y, map, objects) {
             let mut monster = if rand::random::<f32>() < 0.8 {
-                Object::new(x, y, 'o', DESATURATED_GREEN)
+                Object::new(x, y, 'o', "orc", DESATURATED_GREEN, true)
             } else {
-                Object::new(x, y, 'T', DARKER_GREEN)
+                Object::new(x, y, 'T', "troll", DARKER_GREEN, true)
             };
-
+            
+            monster.alive = true;
             objects.push(monster);
         }
     }
