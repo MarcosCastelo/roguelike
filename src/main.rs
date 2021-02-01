@@ -33,6 +33,13 @@ const TORCH_RADIUS: i32 = 5;
 const MAX_ROOM_MONSTERS: i32 = 3;
 const PLAYER: usize = 0;
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum PlayerAction {
+    TookTurn,
+    DidntTakeTurn,
+    Exit,
+}
+
 #[derive(Clone, Copy, Debug)]
 struct Tile {
     blocked: bool,
@@ -189,32 +196,64 @@ fn main() {
 
         tcod.root.flush();
 
-        let player = &mut objects[PLAYER];
-        previous_player_position = (player.x, player.y);
-        let exit = handle_keys(&mut tcod, player);
+        previous_player_position = objects[PLAYER].pos();
+        let player_action = handle_keys(&mut tcod, &game, &mut objects);
+        if player_action == PlayerAction::Exit{
+            break;
+        }
 
-        if exit { break; }
+        if objects[PLAYER].alive && player_action != PlayerAction::DidntTakeTurn {
+            for object in &objects {
+                if (object as *const _) != (&objects[PLAYER] as *const _) {
+                    println!("The {} growls!", object.name);
+                }
+            }
+        }
+
     }
 }
 
-fn handle_keys(tcod: &mut Tcod, game: &Game, objects: &mut Vec<Object>) -> bool {
+fn handle_keys(tcod: &mut Tcod, game: &Game, objects: &mut Vec<Object>) -> PlayerAction {
+    use PlayerAction::*;
+
     let key = tcod.root.wait_for_keypress(true);
-    match key {
-        Key { code: Up, .. } => move_by(PLAYER, 0, -1, game, objects),
-        Key { code: Down, ..} => move_by(PLAYER, 0, 1, game, objects),
-        Key { code: Left, .. } => move_by(PLAYER, -1, 0, game, objects),
-        Key { code: Right, .. } => move_by(PLAYER, 1, 0, game, objects),
-        Key { code: Enter, alt: true, .. } => {
+    let player_alive = objects[PLAYER].alive;
+    match (key, key.text(), player_alive) {
+        (
+            Key {
+                code: Enter,
+                alt: true,
+                ..
+            },
+            _,
+            _,
+        ) => {
             let fullscreen = tcod.root.is_fullscreen();
             tcod.root.set_fullscreen(!fullscreen);
-        },
-        Key { code: Escape, .. } => return true,
+            DidntTakeTurn
+        }
+        (Key { code: Escape, .. }, _, _) => Exit,
 
-        _ => {}
+        (Key { code: Up, .. }, _, true) => {
+            player_move_or_attack(0, -1, game, objects);
+            TookTurn
+        }
+        (Key { code: Down, .. }, _, true) => {
+            player_move_or_attack(0, 1, game, objects);
+            TookTurn
+        }
+        (Key { code: Left, .. }, _, true) => {
+            player_move_or_attack(-1, 0, game, objects);
+            TookTurn
+        }
+        (Key { code: Right, .. }, _, true) => {
+            player_move_or_attack(1, 0, game, objects);
+            TookTurn
+        }
+
+        _ => DidntTakeTurn,
     }
-    false
 }
-
 fn make_map(objects: &mut Vec<Object>) -> Map {
     let mut map = vec![vec![Tile::wall(); MAP_HEIGHT as usize]; MAP_WIDTH as usize];
 
@@ -356,9 +395,28 @@ fn is_blocked(x: i32, y: i32, map: &Map, objects: &[Object]) -> bool {
         .any(|object| object.blocks && object.pos() == (x, y))
 }
 
-pub fn move_by(id: usize, dx: i32, dy: i32, map: &Map, objects: &mut [Object]) {
-        let (x, y) = objects[id].pos();
-        if !is_blocked(x + dx, y + dy, map, objects) {
-            objects[id].set_pos(x + dx, y + dy);
+fn move_by(id: usize, dx: i32, dy: i32, map: &Map, objects: &mut [Object]) {
+    let (x, y) = objects[id].pos();
+    if !is_blocked(x + dx, y + dy, map, objects) {
+        objects[id].set_pos(x + dx, y + dy);
+    }
+}
+
+fn player_move_or_attack(dx: i32, dy: i32, game: &Game, objects: &mut [Object]) {
+    let x = objects[PLAYER].x + dx;
+    let y = objects[PLAYER].y + dy;
+
+    let target_id = objects.iter().position(|object| object.pos() == (x, y));
+
+    match target_id {
+        Some(target_id) => {
+            println!(
+                "The {} laughs at your puny efforts to attack him!",
+                objects[target_id].name
+            );
+        }
+        None => {
+            move_by(PLAYER, dx, dy, &game.map, objects);
         }
     }
+}
