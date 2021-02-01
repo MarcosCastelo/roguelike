@@ -70,6 +70,7 @@ struct Game {
     map: Map
 }
 
+#[derive(Clone, Debug)]
 struct Object {
     x: i32,
     y: i32,
@@ -102,6 +103,10 @@ impl Object {
     pub fn draw(&self, con: &mut dyn Console) {
         con.set_default_foreground(self.color);
         con.put_char(self.x, self.y, self.char, BackgroundFlag::None);
+    }
+
+    pub fn pos(&self) -> (i32, i32) {
+        (self.x, self.y)
     }
 
     pub fn set_pos(&mut self, x: i32, y: i32) {
@@ -340,4 +345,14 @@ fn place_objects(room: Rect, objects: &mut Vec<Object>) {
 
         objects.push(monster);
     }
+}
+
+fn is_blocked(x: i32, y: i32, map: &Map, objects: &[Object]) -> bool {
+    if map[x as usize][y as usize].blocked {
+        return true;
+    }
+
+    objects
+        .iter()
+        .any(|object| object.blocks && object.pos() == (x, y))
 }
