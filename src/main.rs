@@ -31,6 +31,7 @@ const FOV_LIGHT_WALLS: bool = true;
 const TORCH_RADIUS: i32 = 5;
 
 const MAX_ROOM_MONSTERS: i32 = 3;
+const PLAYER: usize = 0;
 
 #[derive(Clone, Copy, Debug)]
 struct Tile {
@@ -91,6 +92,11 @@ impl Object {
         con.set_default_foreground(self.color);
         con.put_char(self.x, self.y, self.char, BackgroundFlag::None);
     }
+
+    pub fn set_pos(&mut self, x: i32, y: i32) {
+        self.x = x;
+        self.y = y;
+    }
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -144,10 +150,10 @@ fn main() {
     
     let player = Object::new(0, 0, '@', WHITE);
 
-    let mut objects = [player];
+    let mut objects = vec![player];
 
     let mut game = Game {
-        map: make_map(&mut objects[0])
+        map: make_map(&mut objects)
     };
 
     for y in 0..MAP_HEIGHT {
@@ -166,12 +172,12 @@ fn main() {
     while !tcod.root.window_closed() {
         tcod.con.clear();
 
-        let fov_recompute = previous_player_position != (objects[0].x, objects[0].y);
+        let fov_recompute = previous_player_position != (objects[PLAYER].x, objects[PLAYER].y);
         render_all(&mut tcod, &mut game, &objects, fov_recompute);
 
         tcod.root.flush();
 
-        let player = &mut objects[0];
+        let player = &mut objects[PLAYER];
         previous_player_position = (player.x, player.y);
         let exit = handle_keys(&mut tcod, player);
 
@@ -197,7 +203,7 @@ fn handle_keys(tcod: &mut Tcod, player: &mut Object) -> bool {
     false
 }
 
-fn make_map(player: &mut Object) -> Map {
+fn make_map(objects: &mut Vec<Object>) -> Map {
     let mut map = vec![vec![Tile::wall(); MAP_HEIGHT as usize]; MAP_WIDTH as usize];
 
     let mut rooms = vec![];
@@ -221,8 +227,7 @@ fn make_map(player: &mut Object) -> Map {
             let (new_x, new_y) = new_room.center();
 
             if rooms.is_empty() {
-                player.x = new_x;
-                player.y = new_y;
+                objects[PLAYER].set_pos(new_x, new_y);
             } else {
                 let (prev_x, prev_y) = rooms[rooms.len() - 1].center();
                 if rand::random() {
@@ -245,7 +250,7 @@ fn make_map(player: &mut Object) -> Map {
 
 fn render_all(tcod: &mut Tcod, game: &mut Game, objects: &[Object], fov_recompute: bool){
     if fov_recompute {
-        let player = &objects[0];
+        let player = &objects[PLAYER];
         tcod.fov.compute_fov(player.x, player.y, TORCH_RADIUS, FOV_LIGHT_WALLS, FOV_ALGO);
     }
     for y in 0..MAP_HEIGHT {
