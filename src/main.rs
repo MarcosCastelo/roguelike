@@ -223,6 +223,7 @@ fn make_map(objects: &mut Vec<Object>) -> Map {
 
         if !failed {
             create_room(new_room, &mut map);
+            place_objects(new_room, objects);
 
             let (new_x, new_y) = new_room.center();
 
