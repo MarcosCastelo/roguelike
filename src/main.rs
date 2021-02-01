@@ -70,18 +70,29 @@ struct Game {
     map: Map
 }
 
-#[derive(Clone, Copy, Debug)]
 struct Object {
     x: i32,
     y: i32,
     char: char,
-    color: Color
+    color: Color,
+    name: String,
+    blocks: bool,
+    alive: bool,
 }
 
 impl Object {
-    pub fn new(x: i32, y: i32, char: char, color: Color) -> Self {
-        Object { x, y, char, color }
-    }
+        
+    pub fn new(x: i32, y: i32, char: char, name: &str, color: Color, blocks: bool) -> Self {
+        Object {
+                x: x,
+                y: y,
+                char: char,
+                color: color,
+                name: name.into(),
+                blocks: blocks,
+                alive: false,
+            }
+    } 
 
     pub fn move_by(&mut self, dx: i32, dy: i32) {
         self.x += dx;
