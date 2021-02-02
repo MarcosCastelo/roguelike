@@ -185,6 +185,12 @@ fn main() {
     
     let mut player = Object::new(0, 0, '@', "player", WHITE, true);
     player.alive = true;
+    player.fighter = Some(Fighter {
+        max_hp: 30,
+        hp: 30,
+        defense: 2,
+        power: 5,
+    });
 
     let mut objects = vec![player];
 
@@ -391,9 +397,27 @@ fn place_objects(room: Rect, map: &Map, objects: &mut Vec<Object>) {
         
         if !is_blocked(x, y, map, objects) {
             let mut monster = if rand::random::<f32>() < 0.8 {
-                Object::new(x, y, 'o', "orc", DESATURATED_GREEN, true)
+                let mut orc = Object::new(x, y, 'o', "orc", DESATURATED_GREEN, true);
+                orc.fighter = Some(Fighter {
+                    max_hp: 10,
+                    hp: 10,
+                    defense: 0,
+                    power: 3,
+                });
+                orc.ai = Some(Ai::Basic);
+
+                orc
             } else {
-                Object::new(x, y, 'T', "troll", DARKER_GREEN, true)
+                let mut troll = Object::new(x, y, 'T', "troll", DARKER_GREEN, true);
+                troll.fighter = Some(Fighter {
+                    max_hp: 16,
+                    hp: 16,
+                    defense: 1,
+                    power: 4
+                });
+                troll.ai = Some(Ai::Basic);
+
+                troll
             };
             
             monster.alive = true;
@@ -436,4 +460,14 @@ fn player_move_or_attack(dx: i32, dy: i32, game: &Game, objects: &mut [Object]) 
             move_by(PLAYER, dx, dy, &game.map, objects);
         }
     }
+}
+
+fn move_towards(id: usize, target_x: i32, target_y: i32, map: &Map, objects: &mut [Object]) {
+    let dx = target_x - objects[id].x;
+    let dy = target_y - objects[id].y;
+    let distance = ((dx.pow(2) + dy.pow(2)) as f32).sqrt();
+
+    let dx = (dx as f32 / distance).round() as i32;
+    let dy = (dy as f32 / distance).round() as i32;
+    move_by(id, dx, dy, map, objects);
 }
