@@ -407,8 +407,10 @@ fn render_all(tcod: &mut Tcod, game: &mut Game, objects: &[Object], fov_recomput
     }
 
     
+    let mut to_draw: Vec<_> = objects.iter().collect();
+    to_draw.sort_by(|o1, o2| { o1.blocks.cmp(&o2.blocks) });
 
-    for object in objects {
+    for object in &to_draw {
         if tcod.fov.is_in_fov(object.x, object.y) {
             object.draw(&mut tcod.con); 
         }
@@ -517,7 +519,7 @@ fn player_move_or_attack(dx: i32, dy: i32, game: &Game, objects: &mut [Object]) 
     let x = objects[PLAYER].x + dx;
     let y = objects[PLAYER].y + dy;
 
-    let target_id = objects.iter().position(|object| object.pos() == (x, y));
+    let target_id = objects.iter().position(|object| object.fighter.is_some() && object.pos() == (x, y));
 
     match target_id {
         Some(target_id) => {
