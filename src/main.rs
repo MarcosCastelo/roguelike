@@ -563,3 +563,11 @@ fn mut_two<T>(first_index: usize, second_index: usize, items: &mut [T]) -> (&mut
         (&mut second_slice[0], &mut first_slice[second_index])
     }
 }
+
+fn player_death(player: &mut Object) {
+    println!("You died!");
+
+    player.char = '%';
+    player.color = DARK_RED;
+}
+
