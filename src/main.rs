@@ -117,6 +117,14 @@ impl Object {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct Fighter {
+    max_hp: i32,
+    hp: i32,
+    defense: i32,
+    power: i32,
+}
+
 #[derive(Clone, Copy, Debug)]
 struct Rect {
     x1: i32,
