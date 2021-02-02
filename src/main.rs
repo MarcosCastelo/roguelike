@@ -139,6 +139,22 @@ impl Object {
         }
     }
 
+    pub fn attack(&mut self, target: &mut Object) {
+        let damage = self.fighter.map_or(0, |f| f.power) - target.fighter.map_or(0, |f| f.defense);
+        if damage > 0 {
+            println!(
+              "{} attacks {} for {} hit points.",
+              self.name, target.name, damage
+            );
+
+            target.take_damage(damage);
+        } else {
+            println!(
+                "{} attacks {} but it has no effect",
+                self.name, target.name
+            );
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -495,10 +511,7 @@ fn ai_take_turn(monster_id: usize, tcod: &Tcod, game: &Game, objects: &mut [Obje
             move_towards(monster_id, player_x, player_y, &game.map, objects);
         } else if objects[PLAYER].fighter.map_or(false, |f| f.hp > 0) {
             let monster = &objects[monster_id];
-            println!(
-                "The attack of the {} bounces off your shiny metal armor!",
-                monster.name
-            );
+            monster.attack(&mut objects[PLAYER]);
         }
     }
 }
