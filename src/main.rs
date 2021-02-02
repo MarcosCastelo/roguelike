@@ -40,6 +40,11 @@ enum PlayerAction {
     Exit,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+enum Ai {
+    Basic,
+}
+
 #[derive(Clone, Copy, Debug)]
 struct Tile {
     blocked: bool,
@@ -86,6 +91,8 @@ struct Object {
     name: String,
     blocks: bool,
     alive: bool,
+    fighter: Option<Fighter>,
+    ai: Option<Ai>,
 }
 
 impl Object {
@@ -99,6 +106,8 @@ impl Object {
                 name: name.into(),
                 blocks: blocks,
                 alive: false,
+                fighter: None,
+                ai: None,
             }
     } 
 
