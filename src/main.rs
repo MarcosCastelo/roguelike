@@ -407,7 +407,7 @@ fn render_all(tcod: &mut Tcod, game: &mut Game, objects: &[Object], fov_recomput
     }
 
     
-    let mut to_draw: Vec<_> = objects.iter().collect();
+    let mut to_draw: Vec<_> = objects.iter().filter(|o| tcod.fov.is_in_fov(o.x, o.y)).collect();
     to_draw.sort_by(|o1, o2| { o1.blocks.cmp(&o2.blocks) });
 
     for object in &to_draw {
