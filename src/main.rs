@@ -45,6 +45,23 @@ enum Ai {
     Basic,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+enum DeathCallback {
+    Player,
+    Monster,
+}
+
+impl DeathCallback {
+    fn callback(self, object: &mut Object) {
+        use DeathCallback::*;
+        let callback: fn(&mut Object) = match self {
+            Payer => player_death,
+            Monster => monster_death,
+        };
+        callback(object);
+    }
+}
+
 #[derive(Clone, Copy, Debug)]
 struct Tile {
     blocked: bool,
@@ -163,6 +180,7 @@ struct Fighter {
     hp: i32,
     defense: i32,
     power: i32,
+    on_death: DeathCallback,
 }
 
 #[derive(Clone, Copy, Debug)]
