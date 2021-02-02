@@ -124,6 +124,12 @@ impl Object {
         self.x = x;
         self.y = y;
     }
+
+    pub fn distance_to(&self, other: &Object) -> f32 {
+        let dx = other.x - self.x;
+        let dy = other.y - self.y;
+        ((dx.pow(2) + dy.pow(2)) as f32).sqrt()
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -471,8 +477,6 @@ fn move_towards(id: usize, target_x: i32, target_y: i32, map: &Map, objects: &mu
     let dy = (dy as f32 / distance).round() as i32;
     move_by(id, dx, dy, map, objects);
 }
-
-
 
 fn ai_take_turn(monster_id: usize, tcod: &Tcod, game: &Game, objects: &mut [Object]) {
     let (monster_x, monster_y) = objects[monster_id].pos();
