@@ -154,6 +154,13 @@ impl Object {
                 fighter.hp -= damage;
             }
         }
+
+        if let Some(fighter) = self.fighter {
+            if fighter.hp <= 0 {
+                self.alive = false;
+                fighter.on_death.callback(self);
+            }
+        }
     }
 
     pub fn attack(&mut self, target: &mut Object) {
@@ -239,6 +246,7 @@ fn main() {
         hp: 30,
         defense: 2,
         power: 5,
+        on_death: DeathCallback::Player
     });
 
     let mut objects = vec![player];
@@ -463,6 +471,7 @@ fn place_objects(room: Rect, map: &Map, objects: &mut Vec<Object>) {
                     hp: 10,
                     defense: 0,
                     power: 3,
+                    on_death: DeathCallback::Monster,
                 });
                 orc.ai = Some(Ai::Basic);
 
@@ -473,7 +482,8 @@ fn place_objects(room: Rect, map: &Map, objects: &mut Vec<Object>) {
                     max_hp: 16,
                     hp: 16,
                     defense: 1,
-                    power: 4
+                    power: 4,
+                    on_death: DeathCallback::Monster,
                 });
                 troll.ai = Some(Ai::Basic);
 
