@@ -483,8 +483,8 @@ fn ai_take_turn(monster_id: usize, tcod: &Tcod, game: &Game, objects: &mut [Obje
     if tcod.fov.is_in_fov(monster_x, monster_y) {
         if objects[monster_id].distance_to(&objects[PLAYER]) >= 2.0 {
             let (player_x, player_y) = objects[PLAYER].pos();
-            move_towards(monster_id, player_x, player_y, map, objects);
-        } else if objects[PLAYER].fighter_map_or(false, |f| f.hp > 0) {
+            move_towards(monster_id, player_x, player_y, &game.map, objects);
+        } else if objects[PLAYER].fighter.map_or(false, |f| f.hp > 0) {
             let monster = &objects[monster_id];
             println!(
                 "The attack of the {} bounces off your shiny metal armor!",
