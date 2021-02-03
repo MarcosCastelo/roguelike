@@ -15,7 +15,11 @@ const SCREEN_HEIGHT: i32 = 50;
 const LIMIT_FPS: i32 = 30;
 
 const MAP_WIDTH: i32 = 80;
-const MAP_HEIGHT: i32 = 45;
+const MAP_HEIGHT: i32 = 43;
+
+const BAR_WIDTH: i32 = 20;
+const PANEL_HEIGHT: i32 = 7;
+const PANEL_Y: i32 = SCREEN_HEIGHT - PANEL_HEIGHT;
 
 const COLOR_DARK_WALL: Color = Color { r: 0, g: 0, b: 100 };
 const COLOR_DARK_GROUND: Color = Color { r: 50, g: 50, b: 150, };
@@ -90,6 +94,7 @@ impl Tile {
 struct Tcod {
     root: Root,
     con: Offscreen,
+    panel: Offscreen,
     fov: FovMap
 }
 
@@ -236,6 +241,7 @@ fn main() {
     let mut tcod = Tcod { 
         root, 
         con: Offscreen::new(MAP_WIDTH, MAP_HEIGHT),
+        panel: Offscreen::new(SCREEN_WIDTH, PANEL_HEIGHT),
         fov: FovMap::new(MAP_WIDTH, MAP_HEIGHT)
     };
     
@@ -426,16 +432,35 @@ fn render_all(tcod: &mut Tcod, game: &mut Game, objects: &[Object], fov_recomput
         1.0
     );
 
-    tcod.root.set_default_foreground(WHITE);
-    if let Some(fighter) = objects[PLAYER].fighter {
-        tcod.root.print_ex(
-            1,
-            SCREEN_HEIGHT - 2,
-            BackgroundFlag::None,
-            TextAlignment::Left,
-            format!("HP: {}/{}", fighter.hp, fighter.max_hp),
-        );
-    }
+    tcod.panel.set_default_background(BLACK);
+    tcod.panel.clear();
+
+    let hp = objects[PLAYER].fighter.map_or(0, |f| f.hp);
+    let max_hp = objects[PLAYER].fighter.map_or(0, |f| f.max_hp);
+
+    render_bar(
+        &mut tcod.panel,
+        1,
+        1,
+        BAR_WIDTH,
+        "HP",
+        hp,
+        max_hp,
+        LIGHT_RED,
+        DARKER_RED,
+    );
+
+
+    blit(
+        &tcod.con,
+        (0, 0),
+        (MAP_WIDTH, MAP_HEIGHT),
+        &mut tcod.root,
+        (0, PANEL_Y),
+        1.0,
+        1.0
+    );
+
 }
 
 fn create_room(room: Rect, map: &mut Map) {
@@ -581,4 +606,35 @@ fn monster_death(monster: &mut Object) {
     monster.fighter = None;
     monster.ai = None;
     monster.name = format!("remains of {}", monster.name);
+}
+
+fn render_bar (
+    panel: &mut Offscreen,
+    x: i32,
+    y: i32,
+    total_width: i32,
+    name: &str,
+    value: i32,
+    maximum: i32,
+    bar_color: Color,
+    back_color: Color
+) {
+    let bar_width = (value as f32 / maximum as f32 * total_width as f32) as i32;
+
+    panel.set_default_background(back_color);
+    panel.rect(x, y, total_width, 1, false, BackgroundFlag::Screen);
+
+    panel.set_default_background(bar_color);
+    if bar_width > 0 {
+        panel.rect(x, y, bar_width, 1, false, BackgroundFlag::Screen);
+    }
+
+    panel.set_default_foreground(WHITE);
+    panel.print_ex(
+        x + total_width / 2,
+        y,
+        BackgroundFlag::None,
+        TextAlignment::Center,
+        &format!("{}: {}/{}", name, value, maximum),
+    );
 }
