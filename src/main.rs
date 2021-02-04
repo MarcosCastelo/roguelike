@@ -37,6 +37,10 @@ const TORCH_RADIUS: i32 = 5;
 const MAX_ROOM_MONSTERS: i32 = 3;
 const PLAYER: usize = 0;
 
+const MSG_X: i32 = BAR_WIDTH + 2;
+const MSG_WIDTH: i32 = SCREEN_WIDTH - BAR_WIDTH - 2;
+const MSG_HEIGHT: usize = PANEL_HEIGHT as usize - 1;
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 enum PlayerAction {
     TookTurn,
@@ -225,6 +229,24 @@ impl Rect {
             && (self.x2 >= other.x1)
             && (self.y1 <= other.y2)
             && (self.y2 >= other.y1)
+    }
+}
+
+struct Messages {
+    messages: Vec<(String, Color)>,
+}
+
+impl Messages {
+    pub fn new() -> Self { 
+        Self { messages: vec![] }
+    }
+
+    pub fn add <T: Into<String>(&mut self, message: T, color: Color)> {
+        self.messages.push((message.into(), color));
+    }
+
+    pub fn iter(&self) -> impl DoubleEndedIterator<Item = &(String, Color)> {
+        self.messages.iter()
     }
 }
 
